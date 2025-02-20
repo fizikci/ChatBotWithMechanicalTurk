@@ -1,0 +1,71 @@
+# Ignore Visual Studio specific files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Ignore build and bin/obj directories
+bin/
+obj/
+out/
+
+# Ignore NuGet packages
+*.nupkg
+*.snupkg
+packages/
+project.lock.json
+project.assets.json
+nuget.lock
+nuget_cache/
+
+# Ignore logs, database, and test results
+*.log
+*.tlog
+*.cache
+TestResults/
+Coverage/
+
+# Ignore temporary and generated files
+*.tmp
+*.bak
+*.swp
+*.swo
+*.DS_Store
+Thumbs.db
+
+# Ignore Rider and JetBrains files
+.idea/
+*.iml
+
+# Ignore ReSharper files
+_ReSharper*/
+*.DotSettings.user
+
+# Ignore user secrets (for ASP.NET Core, but safe to include)
+secrets.json
+
+# Ignore environment-specific settings
+.env
+.env.local
+
+# Ignore dependency manager files
+node_modules/
+
+# Ignore .NET Core global.json if not needed
+global.json
+
+# Ignore compiled DLLs and executables
+*.dll
+*.exe
+*.pdb
+
+# Ignore coverage and analysis reports
+coverage/
+*.coverlet/
+*.coverage
+*.codecov
+
+# Ignore lock files and backups
+.lock
+backup/
