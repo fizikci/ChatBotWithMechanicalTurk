@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Net;
 using System.Resources;
+using System.Threading.Tasks;
 
 namespace ChatBotWithMechanicalTurk
 {
@@ -74,11 +75,11 @@ Guidelines:
             return list;
         }
 
-        private string mechanicalTurk(string json)
+        private async Task<string> mechanicalTurk(string json)
         {
             writeLine("Mechanical Turk Request: ", ConsoleColor.Red, json);
             write("Mechanical Turk Response: ", ConsoleColor.Red);
-            return Console.ReadLine().ToString();
+            return await MessageQueueClient.SendRequestAsync(json);
         }
 
         private void write(string msg, ConsoleColor color = ConsoleColor.Gray)
@@ -116,7 +117,7 @@ Guidelines:
             }
         }
 
-        private void getAssistantMessage()
+        private async void getAssistantMessage()
         {
             var assistant = GPTChatCompletion.Submit(getFullChat());
             var parts = assistant.content.Split("Mechanical Turk Request:");
@@ -129,7 +130,7 @@ Guidelines:
 
             if (!string.IsNullOrEmpty(code))
             {
-                var codeReturn = mechanicalTurk(code);
+                var codeReturn = await mechanicalTurk(code);
 
                 messages.Add(new GPTChatMessage { role = "system", content = codeReturn });
 
@@ -144,7 +145,51 @@ Guidelines:
         }
     }
 
+    public class MessageQueueClient
+    {
+        private static readonly string QueueFilePath = "messageQueue.txt";
+        private static readonly object FileLock = new object();
 
+        public static async Task<string> SendRequestAsync(string request)
+        {
+            await Task.Run(() => EnqueueMessage(request));
+            return await Task.Run(() => DequeueMessage());
+        }
+
+        private static void EnqueueMessage(string message)
+        {
+            lock (FileLock)
+            {
+                using (var writer = new StreamWriter(QueueFilePath, true))
+                {
+                    writer.WriteLine(message);
+                }
+            }
+        }
+
+        private static string DequeueMessage()
+        {
+            lock (FileLock)
+            {
+                if (!File.Exists(QueueFilePath))
+                {
+                    return null;
+                }
+
+                var messages = new List<string>(File.ReadAllLines(QueueFilePath));
+                if (messages.Count == 0)
+                {
+                    return null;
+                }
+
+                var message = messages[0];
+                messages.RemoveAt(0);
+                File.WriteAllLines(QueueFilePath, messages.ToArray());
+
+                return message;
+            }
+        }
+    }
 
     public class GPTChatCompletion
     {
